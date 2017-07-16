@@ -21,16 +21,29 @@ nav {
     width: 90%;
 }
 
-#btnUpload {
+#btnUpload,
+#divAccent {
 	display: none;
 }
 
 #divQuestion, #txaAnswer {
+	background-position: center;
+	background-repeat: no-repeat;
 	border: 1.5px solid #999;
     border-radius: 10px;
 	margin: 20px auto;
 	text-align: center;
     width: 90%;
+}
+
+#divAccent {
+	border: 1.5px solid #999;
+    border-radius: 10px;
+	height: 10%;
+	position: fixed;
+	text-align: center;
+	width: 5%;
+	
 }
 
 #txaAnswer {
@@ -44,6 +57,7 @@ nav {
 
 #btnImport, 
 #btnReset, 
+#divAccent, 
 #divQuestion,
 #message, 
 #txaAnswer,

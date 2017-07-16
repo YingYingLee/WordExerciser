@@ -19,6 +19,7 @@
 			</select>
 		</nav>
 		<div id="divQuestion"></div>
+		<div id="divAccent"></div>
 		<textarea name="txaAnswer" id="txaAnswer" cols="30" rows="10"></textarea>
 	</div>
 	
@@ -30,6 +31,7 @@
 				btnUpload: $("#btnUpload"),
 				btnReset: $("#btnReset"),
 				chkReverse: $("#chkReverse"),
+				divAccent: $("#divAccent"),
 				divQuestion: $("#divQuestion"),
 				fileData: null,
 				hdnAnswer: "",
@@ -67,6 +69,12 @@
 			
 			gVar.divQuestion.css(style);
 			gVar.txaAnswer.css(style);
+			
+			gVar.divAccent.css({
+				"font-size": (height * 0.08) + "px",
+				left: (width * 0.8) + "px",
+				top: (height * 0.25) + "px"
+			});
 		}
 		
 		function appendOption(value, text) {
@@ -77,12 +85,24 @@
 		$(window).bind("keydown", function(event) {
 			let charCode = (event.which) ? event.which : event.keyCode;
 			if (charCode === 13) {	//enter鍵
-				if (gVar.divQuestion.text() !== "") {
-					if (gVar.hdnAnswer === gVar.txaAnswer.val()) {
+				if (gVar.divQuestion.text() !== "" || 
+					gVar.divQuestion.css("background-image").match(/^url/)) {
+					
+					if (gVar.hdnAnswer === gVar.txaAnswer.val() || 
+							gVar.txaAnswer.css("background-image").match(/^url/)) {
+						
 						gVar.txaAnswer.removeClass("highlight");
 						playShuffle();
 					} else {
-						gVar.txaAnswer.val(gVar.hdnAnswer).addClass("highlight");
+						if (gVar.hdnAnswer.match(/^image:/)) {
+							let tmpAnswer = gVar.hdnAnswer.substring(gVar.hdnAnswer.indexOf(":") + 1);
+							tmpAnswer = "data:image/png;base64," + tmpAnswer;
+							gVar.txaAnswer.val("").attr("placeholder", "")
+										.css("background-image", "url(" + tmpAnswer + ")");
+						} else {
+							gVar.txaAnswer.val(gVar.hdnAnswer).addClass("highlight")
+											.css("background-image", "");
+						}
 					}
 				}
 				event.preventDefault();
@@ -198,9 +218,10 @@
 			gVar.selectTitle.empty();
 			appendOption("", "-----請選擇-----");
 			gVar.words.length = 0;
-			gVar.divQuestion.text("");
+			gVar.divQuestion.text("").css("background-image", "");
 			gVar.hdnAnswer = "";
-			gVar.txaAnswer.val("").attr("placeholder", "");
+			gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "");
+			gVar.divAccent.text("").hide();
 		}
 		
 		gVar.btnReset.button({
@@ -224,17 +245,36 @@
 			let isReverse = gVar.chkReverse.prop("checked");
 			let topic = gVar.words[randomNum];
 			
-			gVar.divQuestion.text(isReverse ? topic["answer"] : topic["question"]);
-			gVar.hdnAnswer = isReverse ? topic["question"] : topic["answer"];
-			gVar.txaAnswer.val("").attr("placeholder", "請按Enter");
+			let tmpAnswer = isReverse ? topic["question"] : topic["answer"];
+			
+			if (tmpAnswer === gVar.hdnAnswer) {
+				playShuffle();
+			} else {
+				let tmpQuestion = isReverse ? topic["answer"] : topic["question"];
+				
+				if (tmpQuestion.match(/^image:/)) {
+					tmpQuestion = tmpQuestion.substring(tmpQuestion.indexOf(":") + 1);
+					tmpQuestion = "data:image/png;base64," + tmpQuestion;
+					gVar.divQuestion.text("").css("background-image", "url(" + tmpQuestion + ")");
+				} else {
+					gVar.divQuestion.text(tmpQuestion).css("background-image", "");
+				}
+				
+				gVar.hdnAnswer = tmpAnswer;
+				gVar.txaAnswer.val("").attr("placeholder", "請按Enter").css("background-image", "");
+				if (topic["accent"]) {
+					gVar.divAccent.text(topic["accent"]).show();
+				}
+			}
 		}
 		
 		gVar.selectTitle.selectmenu({
 			change: function() {
 				gVar.words.length = 0;
-				gVar.divQuestion.text("");
+				gVar.divQuestion.text("").css("background-image", "");
 				gVar.hdnAnswer = "";
-				gVar.txaAnswer.val("").attr("placeholder", "");
+				gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "");
+				gVar.divAccent.text("").hide();
 				
 				let storage = JSON.parse(localStorage["WordExerciser"]);
 				for (let i of storage) {

@@ -1,4 +1,5 @@
-html, body {
+html, 
+body {
 	margin: 0;
 }
 
@@ -26,12 +27,15 @@ nav {
 	display: none;
 }
 
-#divQuestion, #txaAnswer {
+#txaAnswer,
+#txaQuestion {
 	background-position: center;
 	background-repeat: no-repeat;
 	border: 1.5px solid #999;
     border-radius: 10px;
+	display: block;
 	margin: 20px auto;
+	resize: none;
 	text-align: center;
     width: 90%;
 }
@@ -45,11 +49,6 @@ nav {
 	width: 5%;
 }
 
-#txaAnswer {
-	display: block;
-	resize: none;
-}
-
 .highlight {
 	color: #DC143C;
 }
@@ -57,9 +56,9 @@ nav {
 #btnImport, 
 #btnReset, 
 #divAccent, 
-#divQuestion,
 #message, 
 #txaAnswer,
+#txaQuestion,
 .ui-checkboxradio-label, 
 .ui-selectmenu-text,
 .ui-menu-item-wrapper, 

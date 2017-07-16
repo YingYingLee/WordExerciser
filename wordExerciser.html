@@ -18,7 +18,7 @@
 				<option value="" selected="selected">-----請選擇-----</option>
 			</select>
 		</nav>
-		<div id="divQuestion"></div>
+		<textarea name="txaQuestion" id="txaQuestion" cols="30" rows="10" disabled></textarea>
 		<div id="divAccent"></div>
 		<textarea name="txaAnswer" id="txaAnswer" cols="30" rows="10"></textarea>
 	</div>
@@ -32,11 +32,11 @@
 				btnReset: $("#btnReset"),
 				chkReverse: $("#chkReverse"),
 				divAccent: $("#divAccent"),
-				divQuestion: $("#divQuestion"),
 				fileData: {},
 				hdnAnswer: "",
 				selectTitle: $("#selectTitle"),
 				txaAnswer: $("#txaAnswer"),
+				txaQuestion: $("#txaQuestion"),
 				words: [],
 				wrapper: $("#wrapper")
 		};
@@ -67,13 +67,13 @@
 				"height": (height * 0.3) + "px"
 			};
 			
-			gVar.divQuestion.css(style);
+			gVar.txaQuestion.css(style);
 			gVar.txaAnswer.css(style);
 			
 			gVar.divAccent.css({
 				"font-size": (height * 0.08) + "px",
 				left: (width * 0.8) + "px",
-				top: (height * 0.25) + "px"
+				top: (height * 0.07) + "px"
 			});
 		}
 		
@@ -85,8 +85,8 @@
 		$(window).bind("keydown", function(event) {
 			let charCode = (event.which) ? event.which : event.keyCode;
 			if (charCode === 13) {	//enter鍵
-				if (gVar.divQuestion.text() !== "" || 
-					gVar.divQuestion.css("background-image").match(/^url/)) {
+				if (gVar.txaQuestion.val() !== "" || 
+					gVar.txaQuestion.css("background-image").match(/^url/)) {
 					
 					if (gVar.hdnAnswer === gVar.txaAnswer.val() || 
 							gVar.txaAnswer.css("background-image").match(/^url/)) {
@@ -225,7 +225,7 @@
 			gVar.selectTitle.empty();
 			appendOption("", "-----請選擇-----");
 			gVar.words.length = 0;
-			gVar.divQuestion.text("").css("background-image", "");
+			gVar.txaQuestion.val("").css("background-image", "");
 			gVar.hdnAnswer = "";
 			gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "");
 			gVar.divAccent.text("").hide();
@@ -262,9 +262,9 @@
 				if (tmpQuestion.match(/^image:/)) {
 					tmpQuestion = tmpQuestion.substring(tmpQuestion.indexOf(":") + 1);
 					tmpQuestion = "data:image/png;base64," + tmpQuestion;
-					gVar.divQuestion.text("").css("background-image", "url(" + tmpQuestion + ")");
+					gVar.txaQuestion.val("").css("background-image", "url(" + tmpQuestion + ")");
 				} else {
-					gVar.divQuestion.text(tmpQuestion).css("background-image", "");
+					gVar.txaQuestion.val(tmpQuestion).css("background-image", "");
 				}
 				
 				gVar.hdnAnswer = tmpAnswer;
@@ -278,7 +278,7 @@
 		gVar.selectTitle.selectmenu({
 			change: function() {
 				gVar.words.length = 0;
-				gVar.divQuestion.text("").css("background-image", "");
+				gVar.txaQuestion.val("").css("background-image", "");
 				gVar.hdnAnswer = "";
 				gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "");
 				gVar.divAccent.text("").hide();

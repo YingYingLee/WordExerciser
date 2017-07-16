@@ -1,0 +1,56 @@
+html, body {
+	margin: 0;
+}
+
+.ui-icon {
+	transform: scale(1.2);
+}
+
+.ui-checkboxradio-icon {
+	margin-right: 5px;
+}
+
+#wrapper {
+    border: 1.5px solid #999;
+    border-radius: 10px;
+    margin: 20px auto;
+}
+
+nav {
+	margin: 20px auto;
+    width: 90%;
+}
+
+#btnUpload {
+	display: none;
+}
+
+#divQuestion, #txaAnswer {
+	border: 1.5px solid #999;
+    border-radius: 10px;
+	margin: 20px auto;
+	text-align: center;
+    width: 90%;
+}
+
+#txaAnswer {
+	display: block;
+	resize: none;
+}
+
+.highlight {
+	color: #DC143C;
+}
+
+#btnImport, 
+#btnReset, 
+#divQuestion,
+#message, 
+#txaAnswer,
+.ui-checkboxradio-label, 
+.ui-selectmenu-text,
+.ui-menu-item-wrapper, 
+.ui-dialog-title, 
+.ui-dialog-buttonset .ui-button {
+	font-family: sans-serif, 'Microsoft JhengHei';
+}

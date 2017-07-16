@@ -33,7 +33,7 @@
 				chkReverse: $("#chkReverse"),
 				divAccent: $("#divAccent"),
 				divQuestion: $("#divQuestion"),
-				fileData: null,
+				fileData: {},
 				hdnAnswer: "",
 				selectTitle: $("#selectTitle"),
 				txaAnswer: $("#txaAnswer"),
@@ -118,46 +118,51 @@
 		});
 		
 		function saveLocalStorage(fileName) {
-			let storage;
-		
-			if (!localStorage["WordExerciser"]) {
-				storage = [];
-			} else {
-				storage = JSON.parse(localStorage["WordExerciser"]);
-			}
-			
-			for (let i of storage) {
-				if (i["title"] === fileName) {
-					return "檔名重複: " + fileName;
+			return new Promise(function(resolve, reject) {
+				let storage;
+				
+				if (!localStorage["WordExerciser"]) {
+					storage = [];
+				} else {
+					storage = JSON.parse(localStorage["WordExerciser"]);
 				}
-			}
-			
-			try {
-				let savaData = {
-					title: fileName,
-					content: []
-				};
-			
-				let line = gVar.fileData.split("\r\n");
-			
-				for (let value of line) {
-					if (value.trim().length > 0) {
-						let data = value.split(",");
-						let topic = {
-							question: data[0],
-							answer: data[1],
-							accent: data[2] || null
-						};
-						savaData["content"].push(topic);
+				
+				for (let i of storage) {
+					if (i["title"] === fileName) {
+						resolve("檔名重複: " + fileName);
+						return;
 					}
 				}
-				storage.push(savaData);
-				localStorage["WordExerciser"] = JSON.stringify(storage);
-				return "";
-			} catch (error) {
-				console.log(error);
-				return "發生錯誤，請再匯一次: " + fileName;
-			}
+				
+				try {
+					let savaData = {
+						title: fileName,
+						content: []
+					};
+					
+					let line = gVar.fileData[fileName].split("\r\n");
+				
+					for (let value of line) {
+						if (value.trim().length > 0) {
+							let data = value.split(",");
+							let topic = {
+								question: data[0],
+								answer: data[1],
+								accent: data[2] || null
+							};
+							savaData["content"].push(topic);
+						}
+					}
+					storage.push(savaData);
+					localStorage["WordExerciser"] = JSON.stringify(storage);
+					resolve("");
+					return;
+				} catch (error) {
+					console.log(error);
+					resolve("發生錯誤，請再匯一次: " + fileName);
+					return;
+				}
+			});
 		}
 			
 		function readFile(file) {
@@ -169,16 +174,17 @@
 					
 					let fileReader = new FileReader();
 					fileReader.onload = function(event) {
-						gVar.fileData = event.target.result;
+						gVar.fileData[fileName] = event.target.result;
 					};
 					
 					$.when(fileReader.readAsText(file, "UTF-8"))
 					.then(function() {
-						let result = saveLocalStorage(fileName);
-						if (result.length === 0) {
-							appendOption(fileName, fileName);
-						}
-						resolve(result);
+						saveLocalStorage(fileName).then(function (result) {
+							if (result.length === 0) {
+								appendOption(fileName, fileName);
+							}
+							resolve(result);
+						});
 					});
 				} else {
 					resolve("可匯入的檔案類型為txt, csv: " + fileName);
@@ -209,6 +215,7 @@
 				}
 			});
 			
+			gVar.fileData = {};
 			this.value = null;
 			return false;
 		});

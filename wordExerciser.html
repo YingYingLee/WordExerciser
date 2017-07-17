@@ -114,6 +114,8 @@
 			icons: {primary: "ui-icon-folder-open"},
 			label: "匯入"
 		}).click(function() {
+			gVar.selectTitle.val("").selectmenu("refresh");
+			reset();
 			gVar.btnUpload.click();
 		});
 		
@@ -127,19 +129,28 @@
 					storage = JSON.parse(localStorage["WordExerciser"]);
 				}
 				
-				for (let i of storage) {
-					if (i["title"] === fileName) {
-						resolve("檔名重複: " + fileName);
-						return;
+				let index = 0;
+				let isUpdate = false;
+				let savaData = null;
+				
+				for (let i = 0, j = storage.length; i < j; i++) {
+					if (storage[i]["title"] === fileName) {
+						index = i;
+						isUpdate = true;
+						savaData = storage[i];
+						savaData["content"].length = 0;
+						break;
 					}
 				}
 				
-				try {
-					let savaData = {
+				if (!savaData) {
+					savaData = {
 						title: fileName,
 						content: []
 					};
-					
+				}
+				
+				try {
 					let line = gVar.fileData[fileName].split("\r\n");
 				
 					for (let value of line) {
@@ -153,7 +164,13 @@
 							savaData["content"].push(topic);
 						}
 					}
-					storage.push(savaData);
+					
+					if (isUpdate) {
+						storage[index] = savaData;
+					} else {
+						storage.push(savaData);
+					}
+					
 					localStorage["WordExerciser"] = JSON.stringify(storage);
 					resolve("");
 					return;
@@ -180,7 +197,9 @@
 					$.when(fileReader.readAsText(file, "UTF-8"))
 					.then(function() {
 						saveLocalStorage(fileName).then(function (result) {
-							if (result.length === 0) {
+							
+							if (result.length === 0 && 
+								gVar.selectTitle.find("[value=" + fileName + "]").length === 0) {
 								appendOption(fileName, fileName);
 							}
 							resolve(result);
@@ -224,11 +243,7 @@
 			localStorage.removeItem("WordExerciser");
 			gVar.selectTitle.empty();
 			appendOption("", "-----請選擇-----");
-			gVar.words.length = 0;
-			gVar.txaQuestion.val("").css("background-image", "");
-			gVar.hdnAnswer = "";
-			gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "");
-			gVar.divAccent.text("").hide();
+			reset();
 		}
 		
 		gVar.btnReset.button({
@@ -254,7 +269,7 @@
 			
 			let tmpAnswer = isReverse ? topic["question"] : topic["answer"];
 			
-			if (tmpAnswer === gVar.hdnAnswer) {
+			if (tmpAnswer === gVar.hdnAnswer && length > 1) {
 				playShuffle();
 			} else {
 				let tmpQuestion = isReverse ? topic["answer"] : topic["question"];
@@ -277,11 +292,7 @@
 		
 		gVar.selectTitle.selectmenu({
 			change: function() {
-				gVar.words.length = 0;
-				gVar.txaQuestion.val("").css("background-image", "");
-				gVar.hdnAnswer = "";
-				gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "");
-				gVar.divAccent.text("").hide();
+				reset();
 				
 				let storage = JSON.parse(localStorage["WordExerciser"]);
 				for (let i of storage) {
@@ -297,6 +308,14 @@
 				}
 			}
 		});
+		
+		function reset() {
+			gVar.words.length = 0;
+			gVar.txaQuestion.val("").css("background-image", "");
+			gVar.hdnAnswer = "";
+			gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "");
+			gVar.divAccent.text("").hide();
+		}
 		
 		function showMessage(msg) {
 			let div = $('<div id="message" title="訊息">' + msg + '</div>');

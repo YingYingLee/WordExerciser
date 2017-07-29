@@ -11,6 +11,10 @@ body {
 	margin-right: 5px;
 }
 
+.ui-button {
+	padding: 5px 10px;
+}
+
 #wrapper {
     border: 1.5px solid #999;
     border-radius: 10px;
@@ -53,12 +57,47 @@ nav {
 	color: #DC143C;
 }
 
-#btnImport, 
-#btnReset, 
+.tr-clicked {
+    background-color: #F0F8FF;
+}
+
+.cell-editing input[type=text] {
+    background-color: #FFFDD2;  
+    border: 0;
+    width: 100%;
+}
+
+table {
+	border-collapse : collapse;
+}
+
+.dialog-div {
+	display: inline-block;
+	margin-bottom: 15px;
+	margin-right: 15px;
+}
+
+.dialog-table th {
+    background-color: #CCC;
+}
+
+.dialog-table th,
+.dialog-table td {
+    border: 1px solid #AAA;
+    font-size: 12px;
+    height: 25px;
+    padding: 3px;
+    text-align: center;
+    width: 120px;
+}
+
 #divAccent, 
 #message, 
 #txaAnswer,
 #txaQuestion,
+.btn,
+.dialog-div,
+.dialog-table,
 .ui-checkboxradio-label, 
 .ui-selectmenu-text,
 .ui-menu-item-wrapper, 

@@ -10,8 +10,11 @@
 	<div id="wrapper">
 		<nav>
 			<input type="file" name="btnUpload" id="btnUpload" multiple />
-			<div id="btnImport"></div>
-			<div id="btnReset"></div>
+			<div id="btnImport" class="btn"></div>
+			<div id="btnAdd" class="btn"></div>
+			<div id="btnEdit" class="btn"></div>
+			<div id="btnDelete" class="btn"></div>
+			<div id="btnExport" class="btn"></div>
 			<label for="chkReverse"></label>
 			<input type="checkbox" name="chkReverse" id="chkReverse">
 			<select name="selectTitle" id="selectTitle">
@@ -25,11 +28,15 @@
 	
 	<script src="lib/jquery-3.2.1.min.js"></script>
 	<script src="lib/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+	<script src="wordExerciser.js"></script>
 	<script>
 		var gVar = {
+				btnAdd: $("#btnAdd"),
+				btnDelete: $("#btnDelete"),
+				btnEdit: $("#btnEdit"),
+				btnExport: $("#btnExport"),
 				btnImport: $("#btnImport"),
 				btnUpload: $("#btnUpload"),
-				btnReset: $("#btnReset"),
 				chkReverse: $("#chkReverse"),
 				divAccent: $("#divAccent"),
 				fileData: {},
@@ -42,45 +49,14 @@
 		};
 		
 		$(function() {
-			if (localStorage["WordExerciser"]) {
-				let storage = JSON.parse(localStorage["WordExerciser"]);
-				for (let i of storage) {
-					let title = i["title"];
-					appendOption(title, title);
-				}
+			let storage = getLocalStorage();
+			for (let i of storage) {
+				let title = i["title"];
+				appendOption(title, title);
 			}
 			
 			resize();
 		});
-		
-		function resize() {
-			let height = window.innerHeight ? window.innerHeight : $(window).height();
-			let width = window.innerWidth ? window.innerWidth : $(window).width();
-			
-			gVar.wrapper.css({
-				"height": (height - 60) + "px",
-				"width": (width * 0.8) + "px"
-			});
-			
-			let style = {
-				"font-size": (height * 0.2) + "px",
-				"height": (height * 0.3) + "px"
-			};
-			
-			gVar.txaQuestion.css(style);
-			gVar.txaAnswer.css(style);
-			
-			gVar.divAccent.css({
-				"font-size": (height * 0.08) + "px",
-				left: (width * 0.8) + "px",
-				top: (height * 0.07) + "px"
-			});
-		}
-		
-		function appendOption(value, text) {
-			gVar.selectTitle.append($("<option></option>").attr("value", value).text(text))
-				.selectmenu("refresh");
-		}
 		
 		$(window).bind("keydown", function(event) {
 			let charCode = (event.which) ? event.which : event.keyCode;
@@ -109,107 +85,33 @@
 				return false;
 			}
 		});
+		
+		//點擊表格改變背景色
+		$(document).on("click", ".clickable", function() {
+			$(".tr-clicked").removeClass("tr-clicked");
+			$(this).addClass("tr-clicked");
+		});
+
+		//可編輯的表格，雙擊變成編輯模式
+		$(document).on("dblclick", ".editable", function() {
+			let tThis = $(this);
+			let originalContent = tThis.text();
+			
+			tThis.addClass("cell-editing").html('<input type="text" />');
+			tThis.children().first().focus().val(originalContent).blur(function() {
+				let _this = $(this);
+				let newContent = _this.val();
+				_this.parent().text(newContent.trim()).removeClass("cell-editing");
+			});
+		});
 	
 		gVar.btnImport.button({
 			icons: {primary: "ui-icon-folder-open"},
 			label: "匯入"
 		}).click(function() {
-			gVar.selectTitle.val("").selectmenu("refresh");
-			reset();
+			reset(true);
 			gVar.btnUpload.click();
 		});
-		
-		function saveLocalStorage(fileName) {
-			return new Promise(function(resolve, reject) {
-				let storage;
-				
-				if (!localStorage["WordExerciser"]) {
-					storage = [];
-				} else {
-					storage = JSON.parse(localStorage["WordExerciser"]);
-				}
-				
-				let index = 0;
-				let isUpdate = false;
-				let savaData = null;
-				
-				for (let i = 0, j = storage.length; i < j; i++) {
-					if (storage[i]["title"] === fileName) {
-						index = i;
-						isUpdate = true;
-						savaData = storage[i];
-						savaData["content"].length = 0;
-						break;
-					}
-				}
-				
-				if (!savaData) {
-					savaData = {
-						title: fileName,
-						content: []
-					};
-				}
-				
-				try {
-					let line = gVar.fileData[fileName].split("\r\n");
-				
-					for (let value of line) {
-						if (value.trim().length > 0) {
-							let data = value.split(",");
-							let topic = {
-								question: data[0],
-								answer: data[1],
-								accent: data[2] || null
-							};
-							savaData["content"].push(topic);
-						}
-					}
-					
-					if (isUpdate) {
-						storage[index] = savaData;
-					} else {
-						storage.push(savaData);
-					}
-					
-					localStorage["WordExerciser"] = JSON.stringify(storage);
-					resolve("");
-					return;
-				} catch (error) {
-					console.log(error);
-					resolve("發生錯誤，請再匯一次: " + fileName);
-					return;
-				}
-			});
-		}
-			
-		function readFile(file) {
-			return new Promise(function(resolve, reject) {
-				let fileName = file.name;
-				
-				if (fileName.match(/(.txt|.csv)$/)) {
-					fileName = fileName.substring(0, fileName.indexOf("."));
-					
-					let fileReader = new FileReader();
-					fileReader.onload = function(event) {
-						gVar.fileData[fileName] = event.target.result;
-					};
-					
-					$.when(fileReader.readAsText(file, "UTF-8"))
-					.then(function() {
-						saveLocalStorage(fileName).then(function (result) {
-							
-							if (result.length === 0 && 
-								gVar.selectTitle.find("[value=" + fileName + "]").length === 0) {
-								appendOption(fileName, fileName);
-							}
-							resolve(result);
-						});
-					});
-				} else {
-					resolve("可匯入的檔案類型為txt, csv: " + fileName);
-				}
-			});
-		}
 		
 		gVar.btnUpload.change(function() {
 			
@@ -218,7 +120,7 @@
 				actions.push(readFile(file));
 			}
 			
-			Promise.all(actions).then(function (results) {
+			Promise.all(actions).then(function(results) {
 				let message = "";
 				for (let result of results) {
 					if (message.length > 0 && result.length > 0) {
@@ -239,18 +141,32 @@
 			return false;
 		});
 		
-		function clearData() {
-			localStorage.removeItem("WordExerciser");
-			gVar.selectTitle.empty();
-			appendOption("", "-----請選擇-----");
-			reset();
-		}
-		
-		gVar.btnReset.button({
-			icons: {primary: "ui-icon-trash"},
-			label: "清空"
+		gVar.btnAdd.button({
+			icons: {primary: "ui-icon-plusthick"},
+			label: "新增"
 		}).click(function() {
-			confirmMessage("確定要清空資料?", clearData);
+			editWords("add");
+		});
+		
+		gVar.btnEdit.button({
+			icons: {primary: "ui-icon-pencil"},
+			label: "修改"
+		}).click(function() {
+			editWords("edit");
+		});
+		
+		gVar.btnDelete.button({
+			icons: {primary: "ui-icon-trash"},
+			label: "刪除"
+		}).click(function() {
+			deleteWords();
+		});
+		
+		gVar.btnExport.button({
+			icons: {primary: "ui-icon-disk"},
+			label: "匯出"
+		}).click(function() {
+			
 		});
 		
 		gVar.chkReverse.checkboxradio({
@@ -261,40 +177,11 @@
 			}
 		});
 		
-		function playShuffle() {
-			let length = gVar.words.length;
-			let randomNum = Math.floor(Math.random() * length);
-			let isReverse = gVar.chkReverse.prop("checked");
-			let topic = gVar.words[randomNum];
-			
-			let tmpAnswer = isReverse ? topic["question"] : topic["answer"];
-			
-			if (tmpAnswer === gVar.hdnAnswer && length > 1) {
-				playShuffle();
-			} else {
-				let tmpQuestion = isReverse ? topic["answer"] : topic["question"];
-				
-				if (tmpQuestion.match(/^image:/)) {
-					tmpQuestion = tmpQuestion.substring(tmpQuestion.indexOf(":") + 1);
-					tmpQuestion = "data:image/png;base64," + tmpQuestion;
-					gVar.txaQuestion.val("").css("background-image", "url(" + tmpQuestion + ")");
-				} else {
-					gVar.txaQuestion.val(tmpQuestion).css("background-image", "");
-				}
-				
-				gVar.hdnAnswer = tmpAnswer;
-				gVar.txaAnswer.val("").attr("placeholder", "請按Enter").css("background-image", "");
-				if (topic["accent"]) {
-					gVar.divAccent.text(topic["accent"]).show();
-				}
-			}
-		}
-		
 		gVar.selectTitle.selectmenu({
 			change: function() {
-				reset();
+				reset(false);
 				
-				let storage = JSON.parse(localStorage["WordExerciser"]);
+				let storage = getLocalStorage();
 				for (let i of storage) {
 					let title = i["title"];
 					if (this.value === title) {
@@ -308,64 +195,6 @@
 				}
 			}
 		});
-		
-		function reset() {
-			gVar.words.length = 0;
-			gVar.txaQuestion.val("").css("background-image", "");
-			gVar.hdnAnswer = "";
-			gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "");
-			gVar.divAccent.text("").hide();
-		}
-		
-		function showMessage(msg) {
-			let div = $('<div id="message" title="訊息">' + msg + '</div>');
-			let dialog = div.dialog({
-				modal: true,
-				resizable: false,
-				height: "auto",
-				width: 350,
-				buttons: [{
-					text: "關閉",
-					click: function() {
-						$(this).dialog("close");
-					}
-				}],
-				close: function() {
-					div.dialog("destroy");
-					div.remove();
-				}
-			});
-			
-			dialog.dialog("open");
-		}
-		
-		function confirmMessage(msg, doAction) {
-			let div = $('<div id="message" title="訊息">' + msg + '</div>');
-			let dialog = div.dialog({
-				modal: true,
-				resizable: false,
-				height: "auto",
-				width: 350,
-				buttons: [{
-					text: "確定",
-					click: function() {
-						doAction();
-						$(this).dialog("close");
-					}
-				}, {
-					text: "取消",
-					click: function() {
-						$(this).dialog("close");
-					}
-				}],
-				close: function() {
-					div.dialog("destroy");
-					div.remove();
-				}
-			});
-			
-			dialog.dialog("open");
-		}
 	</script>
 </body>
 </html>

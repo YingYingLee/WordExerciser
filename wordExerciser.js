@@ -160,7 +160,7 @@ function reset(param) {
 	gVar.words.length = 0;
 	gVar.txaQuestion.val("").css("background-image", "");
 	gVar.hdnAnswer = "";
-	gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "");
+	gVar.txaAnswer.val("").attr("placeholder", "").css("background-image", "").removeClass("highlight");
 	gVar.divAccent.text("").hide();
 }
 

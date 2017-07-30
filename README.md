@@ -10,7 +10,7 @@
 * 目前只支援Google Chrome瀏覽器，其他瀏覽器沒特別測試，不保證相容性
 * 目前只有繁中版，多語系版暫不考慮
 * 文字大小、畫面位置可以調整`wordExerciser.js`裡
-```
+```javascript
 function resize() {
 	let height = window.innerHeight ? window.innerHeight : $(window).height();
 	let width = window.innerWidth ? window.innerWidth : $(window).width();
@@ -55,7 +55,7 @@ function resize() {
 
 ### 修改單字
 * 選擇想修改的標題，會列出目前的資料
-* 其他操作同新增單字
+* 其他操作同`新增單字`
 
 ![](https://github.com/YingYingLee/WordExerciser/raw/master/img/003.jpg "修改單字")
 

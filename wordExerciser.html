@@ -159,14 +159,14 @@
 			icons: {primary: "ui-icon-trash"},
 			label: "刪除"
 		}).click(function() {
-			deleteWords();
+			deleteOrExportWords("delete");
 		});
 		
 		gVar.btnExport.button({
 			icons: {primary: "ui-icon-disk"},
 			label: "匯出"
 		}).click(function() {
-			
+			deleteOrExportWords("export");
 		});
 		
 		gVar.chkReverse.checkboxradio({

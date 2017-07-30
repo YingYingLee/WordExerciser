@@ -405,12 +405,16 @@ function editWords(type) {
     dialog.dialog("open");
 }
 
-function deleteWords() {
+function deleteOrExportWords(type) {
 	
 	let storage = getLocalStorage();
 	
 	if (storage.length === 0) {
-		showMessage("沒有可刪除的項目");
+		if (type === "delete") {
+			showMessage("沒有可刪除的項目");
+		} else {
+			showMessage("沒有可匯出的項目");
+		}
 		return;
 	}
 	
@@ -422,7 +426,11 @@ function deleteWords() {
 			click: function() {
 				
 				if ($(".items:checked").length === 0) {
-					showMessage("請至少選擇一個要刪除的項目");
+					if (type === "delete") {
+						showMessage("請至少選擇一個要刪除的項目");
+					} else {
+						showMessage("請至少選擇一個要匯出的項目");
+					}
 					return;
 				}
 				
@@ -433,31 +441,55 @@ function deleteWords() {
 						
 						let dataValue = this.getAttribute('data-value');
 						
-						if (dataValue === "all") {
-							localStorage.removeItem("WordExerciser");
-							gVar.selectTitle.empty();
-							appendOption("", "-----請選擇-----");
-							return false;
-							
-						} else {
-							let storage = getLocalStorage();
-							let index = -1;
-							for (let i = 0, j = storage.length; i < j; i++) {
-								if (storage[i]["title"] === dataValue) {
-									index = i;
-									break;
+						if (type === "delete") {
+							if (dataValue === "all") {
+								localStorage.removeItem("WordExerciser");
+								gVar.selectTitle.empty();
+								appendOption("", "-----請選擇-----");
+								return false;
+								
+							} else {
+								let index = -1;
+								for (let i = 0, j = storage.length; i < j; i++) {
+									if (storage[i]["title"] === dataValue) {
+										index = i;
+										break;
+									}
+								}
+								if (index > -1) {
+									storage.splice(index, 1);
+									localStorage["WordExerciser"] = JSON.stringify(storage);
+									gVar.selectTitle.find("[value=" + dataValue + "]").remove();
 								}
 							}
-							if (index > -1) {
-								storage.splice(index, 1);
-								localStorage["WordExerciser"] = JSON.stringify(storage);
-								gVar.selectTitle.find("[value=" + dataValue + "]").remove();
+							gVar.selectTitle.selectmenu("refresh");
+							
+						} else {
+							
+							if (dataValue !== "all") {
+								let data = "";
+								for (let s of storage) {
+									if (s["title"] === dataValue) {
+										for (let c of s["content"]) {
+											data += c["question"] + "," + c["answer"];
+											if (c["accent"]) {
+												data += "," + c["accent"];
+											}
+											data += "\r\n";
+										}
+										break;
+									}
+								}
+								
+								let link = document.createElement("a");
+								link.download = dataValue + ".txt";
+								link.href = "data:," + encodeURIComponent(data);
+								link.click();
 							}
 						}
 					}
 				});
 				
-				gVar.selectTitle.selectmenu("refresh");
 				div.dialog("close");
 			}
 		}, {
@@ -474,15 +506,20 @@ function deleteWords() {
         height: 450,
         modal: true,
         resizable: true,
-        title: "刪除單字",
+        title: (type === "delete") ? "刪除單字" : "匯出單字",
         width: 300
 	});
 	
 	let content = $('<div></div>');
 	div.append(content);
 	
-	content.append($('<div class="dialog-div">請選擇要刪除的項目:</div>'))
-		.append($('<label for="all">全選</label>'))
+	if (type === "delete") {
+		content.append($('<div class="dialog-div">請選擇要刪除的項目:</div>'));
+	} else {
+		content.append($('<div class="dialog-div">請選擇要匯出的項目:</div>'));
+	}
+	
+	content.append($('<label for="all">全選</label>'))
 		.append($('<input type="checkbox" id="all" class="items" data-value="all">'));
 	
 	for (let i = 0, j = storage.length; i < j; i++) {

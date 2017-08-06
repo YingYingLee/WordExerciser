@@ -102,6 +102,7 @@ table {
 .ui-selectmenu-text,
 .ui-menu-item-wrapper, 
 .ui-dialog-title, 
-.ui-dialog-buttonset .ui-button {
+.ui-dialog-buttonset .ui-button,
+input[type=text] {
 	font-family: sans-serif, 'Microsoft JhengHei';
 }

@@ -218,33 +218,45 @@ function confirmMessage(msg) {
 }
 
 function convertAndSaveData(title) {
-	
-	let data = "";
-	
-	$(".clickable").each(function() {
-		let _this = $(this);
-		let question = _this.find("td:eq(0)").text();
-		let answer = _this.find("td:eq(1)").text();
-		let accent = _this.find("td:eq(2)").text();
+	return new Promise(function(resolve, reject) {
+		let data = "";
+		let isSave = true;
 		
-		if (question.length > 0 && answer.length > 0) {
-			data += question + "," + answer;
-			if (accent.length > 0) {
-				data += "," + accent;
+		$(".clickable").each(function() {
+			let _this = $(this);
+			let question = _this.find("td:eq(0)").text();
+			let answer = _this.find("td:eq(1)").text();
+			let accent = _this.find("td:eq(2)").text();
+			
+			if ((question.length > 0 && answer.length === 0) || 
+					(question.length === 0 && answer.length > 0)) {
+				
+				isSave = false;
+			} else if (question.length > 0 && answer.length > 0) {
+				data += question + "," + answer;
+				if (accent.length > 0) {
+					data += "," + accent;
+				}
+				data += "\r\n";
 			}
-			data += "\r\n";
+		});
+		
+		if (isSave) {
+			gVar.fileData[title] = data;
+			
+			saveLocalStorage(title).then(function(result) {
+				if (result.length === 0 && 
+					gVar.selectTitle.find("[value=" + title + "]").length === 0) {
+					appendOption(title, title);
+				}
+				gVar.fileData = {};
+				reset(true);
+			});
+			
+			resolve(true);
+		} else {
+			resolve(false);
 		}
-	});
-	
-	gVar.fileData[title] = data;
-	
-	saveLocalStorage(title).then(function(result) {
-		if (result.length === 0 && 
-			gVar.selectTitle.find("[value=" + title + "]").length === 0) {
-			appendOption(title, title);
-		}
-		gVar.fileData = {};
-		reset(true);
 	});
 }
 
@@ -340,13 +352,23 @@ function editWords(type) {
 					if (type === "add" && isExist) {
 						confirmMessage("此標題已存在，是否覆蓋?").then(function(result) {
 							if (result) {
-								convertAndSaveData(title);
-								div.dialog("close");
+								convertAndSaveData(title).then(function(outcome) {
+									if (outcome) {
+										div.dialog("close");
+									} else {
+										showMessage("題目和答案為必填");
+									}
+								});
 							}
 						});
 					} else {
-						convertAndSaveData(title);
-						div.dialog("close");
+						convertAndSaveData(title).then(function(outcome) {
+							if (outcome) {
+								div.dialog("close");
+							} else {
+								showMessage("題目和答案為必填");
+							}
+						});
 					}
 				}
 			}
